@@ -1,0 +1,18 @@
+PORT=8000
+
+ORIGIN=['http://localhost:3000/']
+
+NODE_ENV=development
+
+DB_URI='mongodb+srv://walterwhite:helloworld123@cluster39974.thzcfny.mongodb.net/learning_management'
+# DB_URI='mongodb://localhost:27017/lms'
+
+CLOUD_NAME=dliqrdfvs
+
+CLOUD_APK_KEY=766826212725919
+
+CLOUD_SECRET_KEY=gTgvdAO8uLy9fk893oQwjMQ6bFc
+
+REDIS_URL=rediss://default:AeI1AAIjcDE4YzUwYjJlZDgyNzk0NTJjOTk1YjYxYzg1OWEzODdkNXAxMA@rich-phoenix-57909.upstash.io:6379
+
+ACTIVATION_SECRET=test
