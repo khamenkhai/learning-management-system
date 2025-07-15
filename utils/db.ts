@@ -17,7 +17,8 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
-    console.log(`✅ MongoDB connected to ${conn.connection.host}`);
+    console.log(`✅ MongoDB connected...`);
+    // console.log(`✅ MongoDB connected to ${conn.connection.host}`);
     return conn;
   } catch (err: any) {
     console.error("❌ MongoDB connection failed:", err.message);
@@ -28,19 +29,3 @@ const connectDB = async () => {
 
 export default connectDB;
 
-// const dbUrl: string = process.env.DB_URI || '';
-
-// const connectDB = async () => {
-//   console.log(`Attempting to connect to MongoDB... (URI: ${dbUrl})`);
-  
-//   try {
-//     const conn = await mongoose.connect(dbUrl);
-//     console.log(`✅ MongoDB connected to ${conn.connection.host}`);
-//     return conn;
-//   } catch (err: any) {
-//     console.error("❌ MongoDB connection failed:", err.message);
-//     process.exit(1);
-//   }
-// };
-
-// export default connectDB;

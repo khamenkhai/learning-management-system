@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activate Your Account</title>
+    <style>
+      body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #f5f7fa;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 30px auto;
+        background-color: #ffffff;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      h1 {
+        color: #2c3e50;
+      }
+
+      .btn {
+        display: inline-block;
+        margin-top: 30px;
+        padding: 14px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #4caf50;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn:hover {
+        background-color: #45a049;
+      }
+
+      .footer {
+        margin-top: 40px;
+        font-size: 12px;
+        color: #777;
+        text-align: center;
+      }
+
+      .code-box {
+        background: #f0f0f0;
+        border-radius: 6px;
+        padding: 12px;
+        font-family: monospace;
+        font-size: 18px;
+        text-align: center;
+        margin: 20px 0;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hello <%= user.name %>,</h1>
+      <p>Thank you for signing up!</p>
+      <p>Please use the activation code below to verify your account:</p>
+
+      <div class="code-box">
+        <%= activationCode %>
+      </div>
+
+      <p>If you did not sign up, you can safely ignore this email.</p>
+
+      <div class="footer">
+        <p>&copy; <%= new Date().getFullYear() %> YourCompany. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

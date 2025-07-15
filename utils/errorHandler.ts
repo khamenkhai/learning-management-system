@@ -1,4 +1,4 @@
-export class ErrorHandler extends Error{
+export default class ErrorHandler extends Error{
     
     statusCode : Number;
 
@@ -8,4 +8,3 @@ export class ErrorHandler extends Error{
     }
 }
 
-module.exports = ErrorHandler
