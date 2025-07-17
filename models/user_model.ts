@@ -94,7 +94,7 @@ userSchema.methods.comparePassword = async function (
 // Sign access token
 userSchema.methods.SignAccessToken = function (): string {
     return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN || '', {
-        expiresIn: "10m"
+        expiresIn: "1d"
     });
 };
 
