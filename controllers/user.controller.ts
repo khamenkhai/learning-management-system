@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import userModel, { IUser } from "../models/user_model";
 import ErrorHandler from "../utils/errorHandler";
-import catchAsyncErrors from "../middlewares/catchAsyncError";
+import catchAsyncError from "../middlewares/catchAsyncError";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import ejs from "ejs";
 import path from "path";
@@ -10,7 +10,6 @@ import dotenv from "dotenv";
 import { accessTokenOption, refreshTokenOption, sendToken } from "../utils/jwt";
 import { redis } from "../utils/redis";
 import { getUserById } from "../services/user.service";
-import catchAsyncError from "../middlewares/catchAsyncError";
 import { v2 as cloudinary } from "cloudinary";
 dotenv.config();
 
@@ -23,7 +22,7 @@ interface IRegisterationBody {
 }
 
 // register user
-export const registrationUser = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+export const registrationUser = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, email, password } = req.body;
 
@@ -96,7 +95,7 @@ interface IActivationRequest {
     activation_code: string;
 }
 
-export const activateUser = catchAsyncErrors(
+export const activateUser = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { activation_token, activation_code } = req.body as IActivationRequest;
@@ -141,7 +140,7 @@ interface LoginRequest {
     password: string
 }
 
-export const login = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+export const login = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
 
         const { email, password } = req.body;
@@ -164,7 +163,7 @@ export const login = catchAsyncErrors(async (req: Request, res: Response, next: 
     }
 });
 
-export const logout = catchAsyncErrors(
+export const logout = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
         res.cookie("access_token", "", {
             maxAge: 1
@@ -186,7 +185,7 @@ export const logout = catchAsyncErrors(
 );
 
 // update access token
-export const updateAccessToken = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+export const updateAccessToken = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const refresh_token = req.cookies.refresh_token as string;
         const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN as string) as JwtPayload;
@@ -226,7 +225,7 @@ export const updateAccessToken = catchAsyncErrors(async (req: Request, res: Resp
 });
 
 /// get user data
-export const getUserInfo = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+export const getUserInfo = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = req.user?._id as string;
 
@@ -238,7 +237,7 @@ export const getUserInfo = catchAsyncErrors(async (req: Request, res: Response, 
 });
 
 /// social auth
-export const socialAuth = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+export const socialAuth = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, name, avatar } = req.body;
         const user = await userModel.findOne({ email });
@@ -261,7 +260,7 @@ interface IUpdateUserBody {
     password?: string; // optional if you want to support password change
 }
 
-export const updateUserInfo = catchAsyncErrors(
+export const updateUserInfo = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId = req.user?._id as string;
@@ -298,7 +297,7 @@ interface IUpdatePasswordRequest {
   newPassword: string;
 }
 
-export const updatePassword = catchAsyncErrors(
+export const updatePassword = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?._id as string;

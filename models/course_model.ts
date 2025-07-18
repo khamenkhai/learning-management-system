@@ -13,7 +13,7 @@ interface IQuestion extends Document {
 }
 
 interface IReview extends Document {
-  user: Object;
+  user: IUser;
   rating: number;
   comment: string;
   commentReplies: IComment[];

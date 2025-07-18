@@ -1,0 +1,102 @@
+import { NextFunction, Response, Request } from "express";
+import catchAsyncError from "../middlewares/catchAsyncError";
+import OrderModel, { IOrder } from "../models/order_model";
+import userModel from "../models/user_model";
+import ErrorHandler from "../utils/errorHandler";
+import CourseModel from "../models/course_model";
+import NotificationModel from "../models/notification_model";
+import sendMail from "../utils/sendMail";
+
+export const createOrder = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const { courseId, payment_info } = req.body as IOrder;
+
+        const userId = req.user?._id;
+
+        const user = await userModel.findById(userId);
+
+        const courseExistInUser = user?.courses.some((course: any) => course._id.toString() === courseId);
+
+        if (courseExistInUser) {
+            return next(new ErrorHandler("You have already purchased this course", 400));
+        }
+
+        const course = await CourseModel.findById(courseId);
+
+
+        if (!course) {
+            return next(new ErrorHandler("Course not found", 404));
+        }
+
+        const data: any = {
+            courseId: course._id,
+            userId: user?._id,
+            payment_info: payment_info
+        };
+
+        // newOrder(data, res, next);
+        OrderModel.create(data);
+
+        const mailData = {
+            order: {
+                user: {
+                    name: user?.name // Add user's name
+                },
+                items: [{
+                    name: course.name,
+                    price: course.price,
+                    quantity: 1 // Assuming quantity is 1 for course purchase
+                }],
+                total: course.price,
+                _id: course.id.toString().slice(0, 6),
+                date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            }
+        };
+        const mailData2 = {
+            order: {
+                _id: course.id.toString().slice(0, 6), // fixed split -> slice
+                name: course.name,
+                price: course.price,
+                date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            }
+        };
+
+        try {
+            if (user) {
+                await sendMail({
+                    email: user.email,
+                    subject: "Order confirmation",
+                    template: "order-confirmation.ejs",
+                    data: mailData
+                });
+
+            }
+        } catch (error: any) {
+            return next(new ErrorHandler(error.message, 500));
+        }
+
+        user?.courses.push(course?.id);
+
+        const notification = await NotificationModel.create({
+            user: user?._id,
+            title: "New Order",
+            message: `You have new order from ${course?.name}`
+        });
+
+        if(course.purchased){
+            course.purchased += 1;
+        }
+
+        await course.save();
+
+        res.status(201).json({
+            status: true,
+            data: course
+        });
+
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 500));
+    }
+});
+
