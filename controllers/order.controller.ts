@@ -84,7 +84,7 @@ export const createOrder = catchAsyncError(async (req: Request, res: Response, n
             message: `You have new order from ${course?.name}`
         });
 
-        if(course.purchased){
+        if (course.purchased) {
             course.purchased += 1;
         }
 
@@ -100,3 +100,15 @@ export const createOrder = catchAsyncError(async (req: Request, res: Response, n
     }
 });
 
+export const getAllOrders = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    const orders = await OrderModel.find()
+        .sort({ createdAt: -1 })
+        .populate("userId", "name email")       
+        .populate("courseId", "name price");     
+
+    res.status(200).json({
+        success: true,
+        count: orders.length,
+        data: orders,
+    });
+});

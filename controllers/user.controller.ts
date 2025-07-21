@@ -293,93 +293,170 @@ export const updateUserInfo = catchAsyncError(
 
 
 interface IUpdatePasswordRequest {
-  oldPassword: string;
-  newPassword: string;
+    oldPassword: string;
+    newPassword: string;
 }
 
 export const updatePassword = catchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user?._id as string;
-      const { oldPassword, newPassword } = req.body as IUpdatePasswordRequest;
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user?._id as string;
+            const { oldPassword, newPassword } = req.body as IUpdatePasswordRequest;
 
-      if (!oldPassword || !newPassword) {
-        return next(new ErrorHandler("Both old and new passwords are required", 400));
-      }
+            if (!oldPassword || !newPassword) {
+                return next(new ErrorHandler("Both old and new passwords are required", 400));
+            }
 
-      const user = await userModel.findById(userId).select("+password");
+            const user = await userModel.findById(userId).select("+password");
 
-      if (!user) {
-        return next(new ErrorHandler("User not found", 404));
-      }
+            if (!user) {
+                return next(new ErrorHandler("User not found", 404));
+            }
 
-      const isMatch = await user.comparePassword(oldPassword);
+            const isMatch = await user.comparePassword(oldPassword);
 
-      if (!isMatch) {
-        return next(new ErrorHandler("Old password is incorrect", 400));
-      }
+            if (!isMatch) {
+                return next(new ErrorHandler("Old password is incorrect", 400));
+            }
 
-      user.password = newPassword; // will be hashed by pre-save hook
-      await user.save();
+            user.password = newPassword; // will be hashed by pre-save hook
+            await user.save();
 
-      res.status(200).json({
-        success: true,
-        message: "Password updated successfully",
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 500));
+            res.status(200).json({
+                success: true,
+                message: "Password updated successfully",
+            });
+        } catch (error: any) {
+            return next(new ErrorHandler(error.message, 500));
+        }
     }
-  }
 );
 
 // Update profile picture
 export const updateProfilePicture = catchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { avatar } = req.body;
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { avatar } = req.body;
 
-      const userId = req.user?._id as string;
-      const user = await userModel.findById(userId);
+            const userId = req.user?._id as string;
+            const user = await userModel.findById(userId);
 
-      if (avatar && user) {
-        // If user already has an avatar, delete the old one
-        if (user.avatar?.public_id) {
-          await cloudinary.uploader.destroy(user.avatar.public_id);
+            if (avatar && user) {
+                // If user already has an avatar, delete the old one
+                if (user.avatar?.public_id) {
+                    await cloudinary.uploader.destroy(user.avatar.public_id);
+                }
+
+                const myCloud = await cloudinary.uploader.upload(avatar, {
+                    folder: "avatars",
+                    width: 150,
+                });
+
+                user.avatar = {
+                    public_id: myCloud.public_id,
+                    url: myCloud.secure_url,
+                };
+            } else {
+                const myCloud = await cloudinary.uploader.upload(avatar, {
+                    folder: "avatars",
+                    width: 150,
+                });
+
+                if (!user) {
+                    throw next(new ErrorHandler("User is null!", 400));
+                }
+                user.avatar = {
+                    public_id: myCloud.public_id,
+                    url: myCloud.secure_url,
+                };
+            }
+
+            await user?.save();
+            await redis.set(userId, JSON.stringify(user));
+
+            res.status(200).json({
+                success: true,
+                message: "Avatar updated successfully",
+            });
+        } catch (error: any) {
+            next(error);
         }
-
-        const myCloud = await cloudinary.uploader.upload(avatar, {
-          folder: "avatars",
-          width: 150,
-        });
-
-        user.avatar = {
-          public_id: myCloud.public_id,
-          url: myCloud.secure_url,
-        };
-      } else {
-        const myCloud = await cloudinary.uploader.upload(avatar, {
-          folder: "avatars",
-          width: 150,
-        });
-
-        if(!user){
-            throw next(new ErrorHandler("User is null!",400));
-        }
-        user.avatar = {
-          public_id: myCloud.public_id,
-          url: myCloud.secure_url,
-        };
-      }
-
-      await user?.save();
-      await redis.set(userId, JSON.stringify(user));
-
-      res.status(200).json({
-        success: true,
-        message: "Avatar updated successfully",
-      });
-    } catch (error: any) {
-      next(error);
     }
-  }
+);
+
+
+
+export const getAllUsers = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const users = await userModel.find().sort({ createdAt: -1 });
+
+            res.status(200).json({
+                success: true,
+                count: users.length,
+                data: users,
+            });
+        } catch (error: any) {
+            return next(new ErrorHandler(error.message, 500));
+        }
+    }
+);
+
+
+export const updateUserRole = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { userId, role } = req.body;
+
+            if (!userId || !role) {
+                return next(new ErrorHandler("User ID and role are required", 400));
+            }
+
+            const user = await userModel.findById(userId);
+
+            if (!user) {
+                return next(new ErrorHandler("User not found", 404));
+            }
+
+            user.role = role;
+            await user.save();
+
+            res.status(200).json({
+                success: true,
+                message: "User role updated successfully",
+                user,
+            });
+        } catch (error: any) {
+            return next(new ErrorHandler(error.message, 500));
+        }
+    }
+);
+
+
+export const deleteUser = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.params.id;
+
+            const user = await userModel.findById(userId);
+
+            if (!user) {
+                return next(new ErrorHandler("User not found", 404));
+            }
+
+            // If avatar exists, delete from cloudinary
+            if (user.avatar?.public_id) {
+                await cloudinary.uploader.destroy(user.avatar.public_id);
+            }
+
+            await user.deleteOne();
+
+            res.status(200).json({
+                success: true,
+                message: "User deleted successfully",
+            });
+        } catch (error: any) {
+            return next(new ErrorHandler(error.message, 500));
+        }
+    }
 );
