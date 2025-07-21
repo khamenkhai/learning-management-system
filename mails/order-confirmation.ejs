@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Order Confirmation</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f6f9fc;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 30px auto;
+        background: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+      .header {
+        background-color: #4CAF50;
+        padding: 20px;
+        color: white;
+        text-align: center;
+      }
+      .content {
+        padding: 30px;
+      }
+      .content h2 {
+        margin-top: 0;
+        color: #4CAF50;
+      }
+      .order-summary {
+        margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .total {
+        font-weight: bold;
+        margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        font-size: 18px;
+      }
+      .footer {
+        background: #f1f1f1;
+        text-align: center;
+        padding: 15px;
+        font-size: 14px;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Thank You for Your Order!</h1>
+      </div>
+      <div class="content">
+        <h2>Hi <%= order.user.name %>,</h2>
+        <p>Your order has been received and is now being processed. Here’s a quick summary:</p>
+
+        <div class="order-summary">
+          <% order.items.forEach(item => { %>
+            <div class="order-item">
+              <span><%= item.name %> x <%= item.quantity %></span>
+              <span>$<%= (item.price * item.quantity).toFixed(2) %></span>
+            </div>
+          <% }) %>
+
+          <div class="total">
+            Total: $<%= order.total.toFixed(2) %>
+          </div>
+        </div>
+
+        <p>If you have any questions, feel free to reply to this email.</p>
+        <p>We appreciate your business!</p>
+      </div>
+      <div class="footer">
+        &copy; <%= new Date().getFullYear() %> Your Company. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>
