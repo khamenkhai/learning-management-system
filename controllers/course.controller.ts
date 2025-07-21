@@ -374,7 +374,7 @@ export const addReviewReply = catchAsyncError(async (req: Request, res: Response
       return next(new ErrorHandler("Review not found", 404));
     }
 
-    const replyObj : any= {
+    const replyObj: any = {
       user: req.user,
       comment: reply,
       commentReplies: []
@@ -396,3 +396,22 @@ export const addReviewReply = catchAsyncError(async (req: Request, res: Response
 });
 
 
+// Delete course (Admin only)
+export const deleteCourse = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const courseId = req.params.id;
+
+    const course = await CourseModel.findById(courseId);
+
+    if (!course) {
+      return next(new ErrorHandler("Course not found", 404));
+    }
+
+    await course.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Course deleted successfully",
+    });
+  }
+);
